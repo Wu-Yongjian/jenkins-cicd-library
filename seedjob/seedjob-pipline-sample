@@ -7,7 +7,7 @@ def call() {
         stage ("Checkout application inventories") {
             if (params.inventoryJobs) {
                 dir ("inventories") {
-                    git url: 'https://github.com/Wu-Yongjian/inventories.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                    git url: 'https://github.com/Wu-Yongjian/inventories.git', credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:'main'
                 }
             }
         }
@@ -68,7 +68,7 @@ def call() {
         stage ("Checkout pipelinemap") {
             if (params.pipelinemapJobs) {
                 dir("pipelinemap") {
-                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:'main'
                 }
             }
         }
@@ -230,7 +230,7 @@ def call() {
         stage ("Jenkins Job DSL") {
             if (params.jenkinsDSLJobs) {
                 dir("pipelinemap") {
-                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:'main'
                     jobList = sh (script: """ find . -name '*.groovy' | egrep "${jobPattern}" || echo "devops/cicd/configserver.groovy" """, returnStdout: 'True').trim().split('\n')
                     jianLog.info "pipelinemap jenkinsDSLJobs : ${jobList}"
                     jobList.each {

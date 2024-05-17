@@ -13,7 +13,7 @@ def call() {
         stages {
         stage('checkout') {
             steps {
-                checkout scmGit(branches: [[name: "${params.ansibleBranchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab', url: "${params.ansibleFileRepo}"]])
+                checkout scmGit(branches: [[name: "${params.ansibleBranchName}"]], extensions: [], userRemoteConfigs: [[credentialsId: '9a922e65-7688-4308-8932-30a2672cb697', url: "${params.ansibleFileRepo}"]])
             }
         }
         stage('App deploy') {

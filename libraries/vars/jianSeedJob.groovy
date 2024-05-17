@@ -25,7 +25,7 @@ def call() {
             					scm {
                 					git {
                     						remote {
-                        						credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        						credentials('9a922e65-7688-4308-8932-30a2672cb697')
                         						github('Wu-Yongjian/cicd-library', 'https',  'github.com')
                                                                    }
                                                             }
@@ -58,7 +58,7 @@ def call() {
             					scm {
                 					git {
                     						remote {
-                        						credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        						credentials('9a922e65-7688-4308-8932-30a2672cb697')
                         						github('Wu-Yongjian/cicd-library', 'https',  'github.com')
                                                                    }
                                                             }

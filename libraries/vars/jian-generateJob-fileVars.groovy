@@ -6,7 +6,7 @@ def call(){
 	    stage("generate job")
 		if("${params.jobType}"=='ci'){
             		jianLog.info('ci pipeline enter.......')
-			git url: "${params.varFileRepo}", credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:"${params.varFileRepoBranch}"
+			git url: "${params.varFileRepo}", credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:"${params.varFileRepoBranch}"
             		filename = sh (script: """  git ls-tree --full-tree -r --name-only HEAD|egrep -iv ".gitignore|default|readme.md|.groovy" |grep ${params.varFileName} """, returnStdout: 'True').trim().split('\n')
             		jianLog.info "got files ${filename}"
             		def jobPipelineVariables = readYaml file: "${filename[0]}"
@@ -44,7 +44,7 @@ def call(){
             					scm {
                 					git {
                     						remote {
-                        						credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        						credentials('9a922e65-7688-4308-8932-30a2672cb697')
                         						github('Wu-Yongjian/cicd-library', 'https',  'github.com')
                                                                        }
                                                             }
@@ -57,7 +57,7 @@ def call(){
                 }
                else if (jobType=='cd') {
                         jianLog.info('cd pipeline enter.....')
-                        git url: "${params.varFileRepo}", credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:"${params.varFileRepoBranch}"
+                        git url: "${params.varFileRepo}", credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:"${params.varFileRepoBranch}"
                         filename = sh (script: """  git ls-tree --full-tree -r --name-only HEAD|egrep -iv ".gitignore|default|readme.md|.groovy" |grep ${params.varFileName} """, returnStdout: 'True').trim().split('\n')
                         jianLog.info "got files ${filename}"
                         def jobPipelineVariables = readYaml file: "${filename[0]}"
@@ -83,7 +83,7 @@ def call(){
             					                scm {
                 					                git {
                     						                remote {
-                        						                credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        						                credentials('9a922e65-7688-4308-8932-30a2672cb697')
                         						                github('Wu-Yongjian/cicd-library', 'https',  'github.com')
                                                                        }
                                                             }
@@ -96,7 +96,7 @@ def call(){
         }
                else if (jobType=='cicd'){
                         jianLog.info('cicd pipeline enter.....')
-                        git url: "${params.varFileRepo}", credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:"${params.varFileRepoBranch}"
+                        git url: "${params.varFileRepo}", credentialsId: '9a922e65-7688-4308-8932-30a2672cb697',branch:"${params.varFileRepoBranch}"
                         filename = sh (script: """  git ls-tree --full-tree -r --name-only HEAD|egrep -iv ".gitignore|default|readme.md|.groovy" |grep ${params.varFileName} """, returnStdout: 'True').trim().split('\n')
                         jianLog.info "got files ${filename}"
                         def jobPipelineVariables = readYaml file: "${filename[0]}"
@@ -137,7 +137,7 @@ def call(){
             					                scm {
                 					                git {
                     						                remote {
-                        						                credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        						                credentials('9a922e65-7688-4308-8932-30a2672cb697')
                         						                github('Wu-Yongjian/cicd-library', 'https',  'github.com')
                                                                        }
                                                             }

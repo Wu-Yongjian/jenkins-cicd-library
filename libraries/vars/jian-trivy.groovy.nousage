@@ -1,0 +1,33 @@
+#!groovy
+
+
+def call() {
+ pipeline {
+    agent {label 'master'}
+
+  stages {
+    stage('Scan Docker Image') {
+      steps {
+                sh "docker run -v /var/run/docker.sock:/var/run/docker.sock -v $HOME/Library/Caches:/root/.cache/ -v /tmp:/tmp aquasec/trivy:0.38.3  --severity HIGH,CRITICAL --format template --template '@contrib/html.tpl' --output /tmp/trivy_report.html --insecure  --timeout 20m image nginx"
+            }
+    }
+    stage('Push report') {
+
+      steps {
+        publishHTML(target: [
+          allowMissing: true,
+          alwaysLinkToLastBuild: false,
+          keepAll: true,
+          reportDir: "/tmp",
+          reportFiles: "trivy_report.html",
+          reportName: "Trivy Report",
+          includes: '**/*.html',
+          reportTitles: 'Trivy Scan'
+        ])
+      }
+    }
+  }
+}
+}
+
+call()

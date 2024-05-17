@@ -1,0 +1,245 @@
+#!groovy
+library 'jian-cicd-library'
+def call() {
+
+    def jobPattern = "${params.pattern}".trim()
+    node {
+        stage ("Checkout application inventories") {
+            if (params.inventoryJobs) {
+                dir ("inventories") {
+                    git url: 'https://github.com/Wu-Yongjian/inventories.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                }
+            }
+        }
+        stage ("Inventories Jobs") {
+            if (params.inventoryJobs) {
+                dir ("inventories") {
+                    jianLog.info "params.pattern : ${params.pattern}"
+                    jobList = sh (script: """ find ./ -mindepth 3 -type f|grep -v "./.git" | sed "s#./##"|egrep -iv "Jenkinsfile|.gitignore|/web\$|readme.md" |awk 'BEGIN{FS=OFS="/"}{\$NF=""; NF--; print}' | sort -u | sed 's#^/##' | egrep "${jobPattern}" || echo "devops/cicd" """, returnStdout: 'True').trim().split('\n')
+                    jianLog.info "inventories ansible-playbook jobList: ${jobList}"
+                    jobDsl scriptText: """
+                        folder ("administration") {
+                            displayName("administration")
+                            description("For Devops Team")
+                        }
+                    """
+                    jobList.each {
+                        def folderName = "administration"
+                        def folderNameTmp = it
+                        def folderList = folderNameTmp.tokenize('/')
+                        folderList.each {
+                            folderName = folderName + "/" + it
+                            jobDsl scriptText: """
+                                folder ("${folderName}") {
+                                    displayName("${it}")
+                                    description("${folderName}")
+                                }
+                            """
+                        }
+                        jobDsl scriptText: """
+                            pipelineJob ("administration/${it}/ansible-playbook") {
+                                parameters {
+                                    stringParam('varsProjectName', '', 'Example: cicd')
+                                    stringParam('varsAppName', '', 'Example: riaas-jenkins')
+                                    stringParam('varsBranchName', 'master', 'Example: release')
+                                    stringParam('defaultVarsBranchName', 'master', 'Example: release')
+                                    stringParam('middlewareName', '', 'Example: monit')
+                                    stringParam('playbookName', '', 'Example: configure.yml')
+                                    stringParam('targetEnv', '', 'Example: stg')
+                                    stringParam('extraVars', '', 'Example: -i inventories -e targetEnvGroup=all')
+                                    stringParam('gitAutodeployBranchName', 'master', 'branch name for riaas-autodeploy repo')
+                                    stringParam('username', '', 'User to login on remote host. If you will do privilege escalation from short account name to root, set your short account name here')
+                                    //nonStoredPasswordParam('password', 'This is the sudo password if you will do privilege escalation to another user')
+                                    booleanParam('ansibleCheck', true, 'Select to execute with --diff --check and confirmation')
+                                    booleanParam('updatePipelineOnly', false, 'updatePipelineOnly selected no steps will be executed')
+                                }
+                                definition {
+                                    cps {
+                                        sandbox(true)
+                                        script("adhocAnsiblePlaybook()")
+                                    }
+                                }
+                            }
+                        """
+                    }
+                }
+            }
+        }
+        stage ("Checkout pipelinemap") {
+            if (params.pipelinemapJobs) {
+                dir("pipelinemap") {
+                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                }
+            }
+        }
+        stage ("Pipelinemap Jobs") {
+            if (params.pipelinemapJobs) {
+                dir("pipelinemap") {
+                    jobList = sh (script: """ git ls-tree --full-tree -r --name-only HEAD|egrep -iv ".gitignore|default|readme.md|.groovy" | sed "s/.yml//" | egrep "${jobPattern}" || echo "devops/cicd/configserver" """, returnStdout: 'True').trim().split('\n')
+                    jianLog.info "Pipelinemap jobList ${jobList}"
+                    jobList.each {
+
+                        def jobPipelineMapAppYaml = readYaml file: "${it}.yml"
+                        def parentFolderName = new File("${it}").parent
+                        def actualFolderName
+                        def jobPipelineMapProjectYaml = readYaml file: "${parentFolderName}/default.yml"
+                        def isTargetEnvList = jobPipelineMapAppYaml?.targetEnvList?true:jobPipelineMapProjectYaml?.targetEnvList?true:false
+                        def isAnsible = jobPipelineMapAppYaml?.ansible?true:jobPipelineMapProjectYaml?.ansible?true:false
+                        def targetEnvList = jobPipelineMapAppYaml?.targetEnvList?:jobPipelineMapProjectYaml?.targetEnvList
+                        def isTestAutomation = jobPipelineMapAppYaml?.testAutomation?true:jobPipelineMapProjectYaml?.testAutomation?true:false
+                        def isphpDeploy = jobPipelineMapAppYaml?.phpDeploy?true:jobPipelineMapProjectYaml?.phpDeploy?true:false
+                        def createFlowFolders = jobPipelineMapAppYaml?.createFlowFolders?:jobPipelineMapProjectYaml?.createFlowFolders?:"enabled"
+
+                        jianLog.info "jobPipelineMapAppYaml ${jobPipelineMapAppYaml}"
+                        jianLog.info "parentFolderName ${parentFolderName}"
+                        jianLog.info "jobPipelineMapProjectYaml ${jobPipelineMapProjectYaml}"
+                        jianLog.info "isTargetEnvList ${isTargetEnvList}"
+                        jianLog.info "isAnsible ${isAnsible}"
+                        jianLog.info "targetEnvList ${targetEnvList}"
+                        jianLog.info "isphpDeploy ${isphpDeploy}"
+                        jianLog.info "isTestAutomation ${isTestAutomation}"
+
+                        if ( createFlowFolders == "enabled") {
+                            def folderList = it.tokenize('/')
+                            def folderName = ""
+                            actualFolderName = ""
+                            folderList.each {
+                                folderName = folderName + "/" + it
+                                actualFolderName = folderName.toString().replaceFirst("/", '')
+                                jianLog.info "actualFolderName ${actualFolderName}"
+                                jobDsl scriptText: """
+                                    folder ("${actualFolderName}") {
+                                        displayName("${it}")
+                                        description("${actualFolderName}")
+                                    }
+                                """
+                            }
+                            jobDsl scriptText: """
+                                folder ("${actualFolderName}/cicd") {
+                                    displayName("cicd")
+                                    description("${actualFolderName}/cicd")
+                                }
+                            """
+                            jobDsl scriptText: """
+                                pipelineJob ("${actualFolderName}/cicd/createBranchJob") {
+                                    parameters {
+                                        stringParam('appBranchName', 'develop', 'Please provide Application Branch Name')
+                                    }
+                                    definition {
+                                        cps {
+                                            sandbox(true)
+                                            script("createBranchJob()")
+                                        }
+                                    }
+                                }
+                            """
+                            jianLog.info "actualFolderName ${actualFolderName}"
+
+                            createCicdJobType("${actualFolderName}/cicd", "cicd", "cicd")
+
+                        } else {
+                            def folderList = it.tokenize('/')[0,-2]
+                            def jobName = it.tokenize('/')[-1]
+                            def folderName = ""
+                            actualFolderName = ""
+                            folderList.each {
+                                folderName = folderName + "/" + it
+                                actualFolderName = folderName.toString().replaceFirst("/", '')
+                                jianLog.info "createCicdJobType disabled actualFolderName ${actualFolderName}"
+                                jobDsl scriptText: """
+                                    folder ("${actualFolderName}") {
+                                        displayName("${it}")
+                                        description("${actualFolderName}")
+                                    }
+                                """
+                            }
+                            jianLog.info "createCicdJobType disabled actualFolderName: ${actualFolderName}"
+                            jianLog.info "createCicdJobType disabled jobName: ${jobName}"
+                            createCicdJobType("${actualFolderName}", "${jobName}", "cicd")
+                        }
+
+                        if (isTargetEnvList && isAnsible) {
+                            jobDsl scriptText: """
+                                folder ("${actualFolderName}/autodeploy") {
+                                    displayName("autodeploy")
+                                    description("Project ${actualFolderName}/autodeploy")
+                                }
+                            """
+                            targetEnvList.each {
+                                createCicdJobType("${actualFolderName}/autodeploy", "${it}", "autodeploy")
+                            }
+                        }
+                        if (isphpDeploy) {
+                            jobDsl scriptText: """
+                           folder ("${it}/deployment") {
+                                    displayName("deployment")
+                                    description("Project ${it}/deployment")
+                                }
+                            pipelineJob ("${it}/deployment/php-deployer") {
+                                parameters {
+                                      stringParam('gitURL','','Example: ')
+                                      stringParam('extraVars', '', 'Example: -i inventories -e targetEnvGroup=all')
+                                      stringParam('gitBranchName', 'master', 'branch name for deployer repository')
+                                      stringParam('gitAppBranchName', 'master', 'branch name for applicaiton repository')
+                                      booleanParam('installDev', false, 'Select to execute with --install-dev true')
+                                }
+                                definition {
+                                    cps {
+                                        sandbox(true)
+                                        script("adhocPhpDeploy()")
+                                    }
+                                }
+                            }
+                        """
+                        }
+                        if (isTestAutomation) {
+                            def defaultTag = jobPipelineMapAppYaml?.testAutomation?.defaultTag?:jobPipelineMapProjectYaml?.testAutomation?.defaultTag?:""
+                            def availableTags = jobPipelineMapAppYaml?.testAutomation?.availableTags?:jobPipelineMapProjectYaml?.testAutomation?.availableTags?:""
+                            def cronSchedule = jobPipelineMapAppYaml?.testAutomation?.cronSchedule?:""
+
+                            jobDsl scriptText: """
+                                folder ("${actualFolderName}/autotest") {
+                                    displayName("autotest")
+                                    description("Project ${actualFolderName}/autotest")
+                                }
+                            """
+                            createAutoTestJobType("${actualFolderName}/autotest", "SanityTest", availableTags, "@SanityTest", cronSchedule)
+                            createAutoTestJobType("${actualFolderName}/autotest", "RegressionTest", availableTags, "@RegressionTest", cronSchedule)
+                        }
+                    }
+                    jobList = sh (script: """ find ./ -type d -mindepth 2 | grep -v './.git' | sed 's#^./##g' | egrep "${jobPattern}" || echo "devops/cicd/configserver" """, returnStdout: 'True').trim().split('\n')
+                    jianLog.info "pipelinemap createBranchJobAll : ${jobList}"
+                    jobList.each {
+                        jobDsl scriptText: """
+                            pipelineJob ("${it}/createBranchJobAll") {
+                                parameters {
+                                    stringParam('appBranchName', 'develop', 'Please provide Application Branch Name')
+                                }
+                                definition {
+                                    cps {
+                                        sandbox(true)
+                                        script("createBranchJobAll()")
+                                    }
+                                }
+                            }
+                        """
+                    }
+                }
+            }
+        }
+        stage ("Jenkins Job DSL") {
+            if (params.jenkinsDSLJobs) {
+                dir("pipelinemap") {
+                    git url: 'https://github.com/Wu-Yongjian/piplinemap.git', credentialsId: 'f698feb7-d4c0-4c67-8c52-16ec4ad21eab',branch:'main'
+                    jobList = sh (script: """ find . -name '*.groovy' | egrep "${jobPattern}" || echo "devops/cicd/configserver.groovy" """, returnStdout: 'True').trim().split('\n')
+                    jianLog.info "pipelinemap jenkinsDSLJobs : ${jobList}"
+                    jobList.each {
+                        jobDsl targets: "${it}"
+                    }
+                }
+            }
+        }
+//        publishResultToES("seedJob", "seedJob", "cicd", "jenkins", "jenkins")
+    }
+}
+call()

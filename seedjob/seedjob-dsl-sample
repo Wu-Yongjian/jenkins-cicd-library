@@ -1,0 +1,61 @@
+folder('project-a') {
+    displayName('Project A')
+    description('Folder for project A')
+}
+
+folder('project-a/freestyle') {
+    description('Folder containing all freestyle jobs for project A')
+}
+folder('project-a/pipline') {
+    description('Folder containing all pipline jobs for project A')
+}
+
+job('project-a/freestyle/echo') {
+    steps {
+        shell('echo Hello World!')
+    }
+}
+
+pipelineJob('project-a/pipline/sharelib-parameter') {
+    definition {
+        cpsScm {
+            scm {
+                git {
+                    remote {
+                        credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                    }
+                }
+            }
+            scriptPath('piplinejob/sharelib-parameter.groovy')
+        }
+    }
+    parameters {
+        stringParam {
+            name('envType')
+            defaultValue('#please input your envType #')
+            description('it is the var trans to the sharelib pipelineStart function')
+        }
+        stringParam {
+            name('buildType')
+            defaultValue('#please input your buildType #')
+            description('it is the var trans to the sharelib pipelineStart function')
+        }
+    }
+}
+
+pipelineJob('project-a/pipline/maven-build-frog') {
+    definition {
+        cpsScm {
+            scm {
+                git {
+                    remote {
+                        credentials('f698feb7-d4c0-4c67-8c52-16ec4ad21eab')
+                        github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                    }
+                }
+            }
+            scriptPath('piplinejob/mavenbuild.groovy')
+        }
+    }
+}

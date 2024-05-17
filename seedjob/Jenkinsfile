@@ -1,0 +1,3 @@
+#!groovy   
+library 'jian-cicd-library'
+jianSeedJob()

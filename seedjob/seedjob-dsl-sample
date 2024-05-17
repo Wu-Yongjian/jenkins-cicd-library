@@ -23,7 +23,7 @@ pipelineJob('project-a/pipline/sharelib-parameter') {
                 git {
                     remote {
                         credentials('9a922e65-7688-4308-8932-30a2672cb697')
-                        github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                        github('Wu-Yongjian/jenkins-cicd-library', 'https',  'github.com')
                     }
                 }
             }
@@ -51,7 +51,7 @@ pipelineJob('project-a/pipline/maven-build-frog') {
                 git {
                     remote {
                         credentials('9a922e65-7688-4308-8932-30a2672cb697')
-                        github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                        github('Wu-Yongjian/jenkins-cicd-library', 'https',  'github.com')
                     }
                 }
             }

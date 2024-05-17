@@ -36,7 +36,7 @@ def call(){
                 					git {
                     						remote {
                         						credentials('9a922e65-7688-4308-8932-30a2672cb697')
-                        						github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                        						github('Wu-Yongjian/jenkins-cicd-library', 'https',  'github.com')
                                                                        }
                                                             }
                                                      }
@@ -69,7 +69,7 @@ def call(){
                 					            git {
                     						            remote {
                         						            credentials('9a922e65-7688-4308-8932-30a2672cb697')
-                        						            github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                        						            github('Wu-Yongjian/jenkins-cicd-library', 'https',  'github.com')
                                                                        }
                                                             }
                                                      }
@@ -116,7 +116,7 @@ def call(){
                 					            git {
                     						            remote {
                         						            credentials('9a922e65-7688-4308-8932-30a2672cb697')
-                        						            github('Wu-Yongjian/cicd-library', 'https',  'github.com')
+                        						            github('Wu-Yongjian/jenkins-cicd-library', 'https',  'github.com')
                                                                        }
                                                             }
                                                      }

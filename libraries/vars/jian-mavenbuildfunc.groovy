@@ -1,7 +1,7 @@
 def call() {
 
     pipeline {
-        agent{label 'master'}
+        agent{label "${params.workNode}"}
         environment {
             http_proxy="${params.proxyUrl}"
             https_proxy="${params.proxyUrl}"
